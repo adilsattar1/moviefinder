@@ -36,42 +36,41 @@ const App = () => {
   useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm])
 
   const fetchMovies = async (query) => {
-
     setIsLoading(true);
     setErrorMessage(null);
-
+  
     try {
       const endpoint = query
         ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
         : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+  
       const response = await fetch(endpoint, API_OPTIONS);
-
+      const data = await response.json(); // move up here
+  
       if (!response.ok) {
         throw new Error(`Error: ${data.status_message}`);
       }
-
-      const data = await response.json();
-
+  
       if (data.Response === 'False') {
         setErrorMessage(data.Error || 'Failed to Fetch Movies');
         setMovieList([]);
         return;
       }
-
+  
       setMovieList(data.results || []);
       console.log('Movies:', data.results);
-
+  
       if (query && data.results.length > 0) {
         await updateSearchCount(query, data.results[0]);
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Error fetching movies:', error);
       setErrorMessage('Failed to fetch movies. Please try again later.');
     } finally {
       setIsLoading(false);
     }
   }
+  
 
   const loadTrendingMovies = async () => {
     try {
